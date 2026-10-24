@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="WhereToGo — AI-powered place & itinerary discovery. Less searching. More living.">
+<meta name="theme-color" content="#080808">
+<meta property="og:title" content="WhereToGo">
+<meta property="og:description" content="Less searching. More living. — AI travel companion.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/logo.png">
+<title>WhereToGo</title>
+<style>
+  /* Layout concept: a cinematic night hero — a video skyline behind a glowing 3D
+     globe anchored to the RIGHT, warm ivory editorial copy on the left; the rest
+     unfolds in quiet, staggered reveals over near-black. */
+  :root{
+    --bg:#080808;
+    --bg-warm:#0c0b09;
+    --surface:#15140f;
+    --surface-2:#1d1c17;
+    --border:#2a2a27;
+    --border-soft:#201f1b;
+    --ivory:#f6f2e9;
+    --ivory-dim:#cdc8ba;
+    --muted:#9d9a91;
+    --gold:#e8b65a;
+    --gold-deep:#c9912e;
+    --gold-soft:rgba(232,182,90,.14);
+    --sage:#a8b6a0;
+    color-scheme: dark;
+
+    --display:"Fraunces", "Hoefler Text", Georgia, serif;
+    --sans:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+    --maxw:1180px;
+    --gutter:clamp(18px,5vw,56px);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg);color:var(--ivory);
+    font-family:var(--sans);font-size:16px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  ::selection{background:rgba(232,182,90,.28);color:var(--ivory)}
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding-inline:var(--gutter)}
+
+  .eyebrow{
+    font-size:.72rem;letter-spacing:.26em;text-transform:uppercase;
+    color:var(--sage);font-weight:600;display:inline-flex;align-items:center;gap:.65em;
+  }
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--sage);opacity:.7}
+
+  h1,h2,h3{font-family:var(--display);font-weight:400;text-wrap:balance;margin:0;line-height:1.04}
+  .serif-em{font-style:italic;color:var(--gold)}
+
+  /* ---------- Nav ---------- */
+  header.nav{
+    position:sticky;top:env(safe-area-inset-top,0px);z-index:40;
+    backdrop-filter:blur(14px);
+    background:linear-gradient(180deg,rgba(8,8,8,.5),rgba(8,8,8,.1));
+    transition:background .3s, border-color .3s;
+    border-bottom:1px solid transparent;
+  }
+  header.nav.scrolled{
+    background:linear-gradient(180deg,rgba(8,8,8,.9),rgba(8,8,8,.6));
+    border-bottom:1px solid var(--border-soft);
+  }
+  .nav-in{display:flex;align-items:center;justify-content:space-between;gap:14px;height:66px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand img{width:34px;height:34px;border-radius:9px;box-shadow:0 4px 16px rgba(0,0,0,.6)}
+  .brand b{font-family:var(--sans);font-weight:700;letter-spacing:-.01em;font-size:1.06rem}
+  .brand b span{color:var(--gold)}
+  .nav-right{display:flex;align-items:center;gap:22px}
+  .nav-links{display:flex;align-items:center;gap:26px;font-size:.92rem;color:var(--ivory-dim)}
+  .nav-links a{transition:color .2s}
+  .nav-links a:hover{color:var(--ivory)}
+  .lang{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;background:rgba(0,0,0,.25)}
+  .lang button{
+    appearance:none;border:0;background:transparent;color:var(--muted);
+    font-family:var(--sans);font-size:.76rem;font-weight:600;letter-spacing:.04em;
+    padding:6px 11px;cursor:pointer;transition:color .2s, background .2s;
+  }
+  .lang button[aria-pressed="true"]{background:var(--ivory);color:#0a0a0a}
+  .nav-cta{
+    font-size:.88rem;font-weight:600;padding:9px 18px;border-radius:999px;
+    background:var(--ivory);color:#0a0a0a;transition:transform .2s, box-shadow .2s;
+  }
+  .nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(246,242,233,.18)}
+  @media (max-width:860px){.nav-links{display:none}}
+  @media (max-width:420px){.nav-cta{display:none}}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;isolation:isolate;overflow:hidden;background:#060605}
+  .hero-video{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;
+    filter:saturate(1.05) contrast(1.02);
+  }
+  .hero-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:
+      linear-gradient(90deg, rgba(6,6,5,.94) 0%, rgba(6,6,5,.72) 42%, rgba(6,6,5,.42) 70%, rgba(6,6,5,.72) 100%),
+      radial-gradient(120% 80% at 78% 42%, rgba(232,182,90,.12), transparent 55%);
+  }
+  .hero-canvas{position:absolute;inset:0;width:100%;z-index:2;pointer-events:none}
+  .hero::after{content:"";position:absolute;z-index:3;left:0;right:0;bottom:0;height:30%;pointer-events:none;
+    background:linear-gradient(180deg,transparent,var(--bg))}
+  .hero-in{
+    position:relative;z-index:4;pointer-events:none;
+    min-height:min(780px,92vh);display:flex;flex-direction:column;justify-content:center;
+    padding-block:clamp(74px,13vh,132px);
+  }
+  .hero-in a,.hero-in button{pointer-events:auto}
+  .hero-copy{max-width:600px}
+  .hero h1{font-size:clamp(2.9rem,8.4vw,5.4rem);letter-spacing:-.015em;margin-top:22px}
+  .hero p.lede{font-size:clamp(1.02rem,2.3vw,1.22rem);color:var(--ivory-dim);max-width:46ch;margin:22px 0 0;line-height:1.55}
+  .cta-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:30px}
+  .store-btn{
+    display:inline-flex;align-items:center;gap:12px;padding:13px 20px;border-radius:14px;
+    background:var(--ivory);color:#0a0a0a;font-weight:600;transition:transform .2s,box-shadow .25s;
+  }
+  .store-btn.ghost{background:transparent;color:var(--ivory);border:1px solid var(--border)}
+  .store-btn:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.5)}
+  .store-btn.ghost:hover{border-color:var(--gold);box-shadow:none}
+  .store-btn .s-top{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;opacity:.7;line-height:1}
+  .store-btn .s-main{font-size:1rem;line-height:1.15;font-weight:700}
+  .store-btn svg{width:22px;height:22px;flex:none}
+  .hint{margin-top:26px;display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.84rem}
+  .hint .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold)}
+
+  /* glowing "coming soon" badge */
+  .soon-badge{
+    display:inline-flex;align-items:center;gap:9px;margin-top:4px;
+    padding:8px 16px;border-radius:999px;
+    font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;font-weight:700;
+    color:var(--gold);
+    background:linear-gradient(180deg, rgba(232,182,90,.14), rgba(232,182,90,.05));
+    border:1px solid rgba(232,182,90,.45);
+    animation:soonGlow 2.6s ease-in-out infinite;
+  }
+  .soon-badge .spark{width:8px;height:8px;border-radius:50%;background:var(--gold);
+    box-shadow:0 0 10px var(--gold),0 0 18px var(--gold);animation:soonDot 2.6s ease-in-out infinite}
+  @keyframes soonGlow{
+    0%,100%{box-shadow:0 0 10px rgba(232,182,90,.25), inset 0 0 8px rgba(232,182,90,.08);border-color:rgba(232,182,90,.35);text-shadow:0 0 6px rgba(232,182,90,.25)}
+    50%{box-shadow:0 0 28px rgba(232,182,90,.6), 0 0 48px rgba(232,182,90,.25), inset 0 0 14px rgba(232,182,90,.18);border-color:rgba(232,182,90,.85);text-shadow:0 0 14px rgba(232,182,90,.7)}
+  }
+  @keyframes soonDot{0%,100%{opacity:.6;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}
+
+  /* ---------- Sections ---------- */
+  .sect{padding-block:clamp(72px,11vw,128px)}
+  .sect-head{max-width:640px;margin-bottom:clamp(40px,6vw,64px)}
+  .sect-head h2{font-size:clamp(2rem,5vw,3.1rem);letter-spacing:-.01em;margin-top:18px}
+  .sect-head p{color:var(--muted);font-size:1.05rem;margin:18px 0 0;max-width:52ch}
+
+  .f-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media (max-width:900px){.f-grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:560px){.f-grid{grid-template-columns:1fr}}
+  .f-card{
+    background:linear-gradient(180deg,var(--surface),var(--bg-warm));
+    border:1px solid var(--border-soft);border-radius:18px;padding:26px 24px 28px;min-width:0;
+    transition:border-color .25s, transform .25s, box-shadow .25s;
+  }
+  .f-card:hover{border-color:rgba(232,182,90,.35);transform:translateY(-4px);box-shadow:0 18px 40px rgba(0,0,0,.4)}
+  .f-card.wide{grid-column:span 2}
+  @media (max-width:560px){.f-card.wide{grid-column:span 1}}
+  .f-ico{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;
+    background:var(--gold-soft);border:1px solid rgba(232,182,90,.22);margin-bottom:18px;color:var(--gold)}
+  .f-ico svg{width:23px;height:23px}
+  .f-card h3{font-family:var(--sans);font-weight:700;font-size:1.14rem;letter-spacing:-.01em;line-height:1.3}
+  .f-card p{color:var(--muted);font-size:.96rem;margin:10px 0 0}
+  .lang-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .lang-chip{font-size:.8rem;color:var(--ivory-dim);border:1px solid var(--border);border-radius:999px;padding:5px 12px;background:rgba(255,255,255,.015)}
+
+  .how{background:radial-gradient(900px 420px at 80% -10%, rgba(168,182,160,.07), transparent 60%),var(--bg-warm);border-block:1px solid var(--border-soft)}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+  @media (max-width:860px){.steps{grid-template-columns:repeat(2,1fr);gap:28px 22px}}
+  @media (max-width:480px){.steps{grid-template-columns:1fr}}
+  .step{padding:0 26px;position:relative}
+  .step:not(:last-child)::after{content:"";position:absolute;top:10px;right:0;width:1px;height:78%;background:linear-gradient(180deg,var(--border),transparent)}
+  @media (max-width:860px){.step{padding:0 4px}.step::after{display:none}}
+  .step .num{font-family:var(--display);font-size:1.6rem;color:var(--gold);line-height:1}
+  .step .num small{font-size:.9rem;color:var(--muted);font-family:var(--sans)}
+  .step h3{font-family:var(--sans);font-weight:700;font-size:1.08rem;margin:16px 0 0;letter-spacing:-.01em}
+  .step p{color:var(--muted);font-size:.93rem;margin:9px 0 0}
+
+  .show-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(36px,6vw,72px);align-items:center}
+  @media (max-width:820px){.show-grid{grid-template-columns:1fr;gap:48px}}
+  .quote{font-family:var(--display);font-size:clamp(1.5rem,3.4vw,2.25rem);line-height:1.28;letter-spacing:-.01em;margin:22px 0 0}
+  .quote span{color:var(--gold)}
+  .quote-by{margin-top:22px;color:var(--muted);font-size:.92rem;letter-spacing:.02em}
+  .phone-stage{position:relative;display:grid;place-items:center;min-height:460px}
+  .phone-stage::before{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(232,182,90,.18),transparent 62%);filter:blur(6px)}
+  .phone{position:relative;width:min(272px,74vw);aspect-ratio:9/19.3;border-radius:38px;padding:11px;
+    background:linear-gradient(160deg,#2a2924,#0f0e0b);
+    box-shadow:0 40px 90px rgba(0,0,0,.6), inset 0 0 0 1px rgba(246,242,233,.06);
+    transform:rotate(-4deg);animation:floaty 7s ease-in-out infinite}
+  @keyframes floaty{0%,100%{transform:rotate(-4deg) translateY(0)}50%{transform:rotate(-4deg) translateY(-12px)}}
+  .screen{position:relative;height:100%;border-radius:28px;overflow:hidden;background:linear-gradient(180deg,#0e0d0a,#080808);border:1px solid #000;display:flex;flex-direction:column}
+  .scr-hero{height:46%;position:relative;overflow:hidden;background:radial-gradient(120% 90% at 70% 10%, rgba(232,182,90,.5), transparent 55%),linear-gradient(200deg,#3a2f1c,#141008)}
+  .scr-hero .tag{position:absolute;left:16px;top:16px;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ivory);opacity:.85}
+  .scr-hero .ttl{position:absolute;left:16px;bottom:14px;right:16px;font-family:var(--display);font-size:1.2rem;line-height:1.1;color:var(--ivory)}
+  .scr-body{padding:14px;display:flex;flex-direction:column;gap:9px;flex:1}
+  .scr-chiprow{display:flex;gap:7px}
+  .scr-chip{font-size:.56rem;color:var(--ivory-dim);border:1px solid var(--border);border-radius:999px;padding:4px 9px}
+  .scr-chip.on{background:var(--gold);color:#0a0a0a;border-color:var(--gold);font-weight:700}
+  .scr-item{display:flex;align-items:center;gap:10px;background:var(--surface-2);border-radius:12px;padding:9px 11px}
+  .scr-dot{width:26px;height:26px;border-radius:8px;flex:none;display:grid;place-items:center;background:var(--gold-soft);color:var(--gold);font-size:.7rem;font-weight:700}
+  .scr-item b{font-size:.72rem;font-weight:600;color:var(--ivory)}
+  .scr-item small{display:block;font-size:.6rem;color:var(--muted);margin-top:1px}
+  .scr-time{margin-left:auto;font-size:.58rem;color:var(--sage)}
+  .phone-cap{position:absolute;bottom:4%;left:50%;transform:translateX(-50%);font-size:.72rem;color:var(--muted);white-space:nowrap}
+
+  .download{text-align:center}
+  .dl-card{background:radial-gradient(700px 300px at 50% 0%, rgba(232,182,90,.12), transparent 60%),linear-gradient(180deg,var(--surface),var(--bg-warm));
+    border:1px solid var(--border);border-radius:28px;padding:clamp(44px,7vw,78px) var(--gutter);position:relative;overflow:hidden}
+  .dl-card h2{font-size:clamp(2.1rem,5.2vw,3.4rem);letter-spacing:-.015em}
+  .dl-card p{color:var(--ivory-dim);max-width:48ch;margin:20px auto 0;font-size:1.06rem}
+  .dl-card .cta-row{justify-content:center}
+  .dl-card .soon-badge{margin-top:26px}
+
+  footer{border-top:1px solid var(--border-soft);padding-block:48px;color:var(--muted)}
+  .foot-in{display:flex;flex-wrap:wrap;gap:24px;justify-content:space-between;align-items:center}
+  .foot-brand{display:flex;align-items:center;gap:12px}
+  .foot-brand img{width:30px;height:30px;border-radius:8px}
+  .foot-brand b{color:var(--ivory);font-weight:700}
+  .foot-brand small{display:block;color:var(--muted);font-size:.8rem}
+  .foot-meta{font-size:.82rem;text-align:right;line-height:1.7}
+  @media (max-width:520px){.foot-in{flex-direction:column;align-items:flex-start}.foot-meta{text-align:left}}
+
+  /* ---------- reveal / scroll animation ---------- */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.22,.61,.36,1), transform .8s cubic-bezier(.22,.61,.36,1)}
+  .reveal.from-left{transform:translateX(-28px)}
+  .reveal.zoom{transform:translateY(26px) scale(.96)}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .phone,.soon-badge,.soon-badge .spark{animation:none}
+    .hero-video{display:none}
+  }
+
+  /* mask the AI-video watermark in the bottom-right corner */
+  .hero-mask{position:absolute;z-index:1;right:0;bottom:0;width:48%;height:54%;pointer-events:none;
+    background:radial-gradient(125% 125% at 100% 100%, var(--bg) 0%, var(--bg) 36%, rgba(8,8,8,.78) 54%, rgba(8,8,8,0) 80%)}
+  /* real app screenshot in a floating phone */
+  .phone-shot{position:relative;display:flex;flex-direction:column;align-items:center;
+    transform:rotate(-4deg);animation:floaty 7s ease-in-out infinite}
+  .phone-shot img{width:min(276px,76vw);height:auto;border-radius:36px;
+    box-shadow:0 46px 104px rgba(0,0,0,.64), 0 0 0 1px rgba(246,242,233,.06);filter:saturate(1.03)}
+  .phone-shot .phone-cap{position:static;transform:none;margin-top:20px}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap">
+
+</head>
+<body>
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top" aria-label="WhereToGo">
+      <img src="assets/logo.png" alt="WhereToGo logo">
+      <b>Where<span>To</span>Go</b>
+    </a>
+    <div class="nav-right">
+      <nav class="nav-links">
+        <a href="#features" data-i18n="nav.features">Features</a>
+        <a href="#how" data-i18n="nav.how">How it works</a>
+        <a href="#download" data-i18n="nav.download">Download</a>
+      </nav>
+      <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="vi">VI</button>
+        <button type="button" data-lang="ko">KO</button>
+      </div>
+      <a class="nav-cta" href="#download" data-i18n="nav.cta">Get the app</a>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <video class="hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+      <source src="assets/hero.mp4" type="video/mp4">
+    </video>
+    <div class="hero-scrim"></div>
+    <div class="hero-mask"></div>
+    <canvas class="hero-canvas" id="globe" aria-hidden="true"></canvas>
+    <div class="wrap hero-in">
+      <div class="hero-copy">
+        <span class="eyebrow" data-i18n="hero.eyebrow">AI travel companion</span>
+        <h1 data-i18n-html="hero.title">Less searching.<br><span class="serif-em">More living.</span></h1>
+        <p class="lede" data-i18n="hero.lede">WhereToGo plans the trip you actually want — reading your mood and budget, then drawing a day you can just walk out and live.</p>
+        <div style="margin-top:28px">
+          <span class="soon-badge"><span class="spark"></span><span data-i18n="store.soon">Coming soon</span></span>
+        </div>
+        <div class="cta-row">
+          <a class="store-btn" href="#download">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.5 1.6c.1 1-.3 2-.9 2.8-.7.8-1.7 1.4-2.7 1.3-.1-1 .4-2 1-2.7.6-.8 1.7-1.3 2.6-1.4zM19 17.3c-.5 1.1-.7 1.6-1.3 2.6-.9 1.4-2.1 3.1-3.6 3.1-1.4 0-1.7-.9-3.6-.9-1.8 0-2.2.9-3.6.9-1.5 0-2.7-1.6-3.6-3C.9 16.7.7 12 2.4 9.5 3.6 7.8 5.4 6.8 7.1 6.8c1.7 0 2.8 1 4.2 1 1.4 0 2.2-1 4.2-1 1.5 0 3.1.8 4.2 2.3-3.7 2-3.1 7.3-.7 8.2z"/></svg>
+            <span><span class="s-top" data-i18n="store.soon">Coming soon</span><span class="s-main" data-i18n="store.appstore">App Store</span></span>
+          </a>
+          <a class="store-btn ghost" href="#download">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.6 2.3c-.3.2-.5.6-.5 1.1v17.2c0 .5.2.9.5 1.1l9.3-9.7-9.3-9.7zM15 10.6l-2.4-2.5 2.4-2.5 3.9 2.2c1 .6 1 1.3 0 1.9L15 10.6zm-1.5 1.6L4.6 21.4l9.6-5.5-1.7-3.7zm0-1.2 1.7-3.7-9.6-5.5 7.9 9.2z"/></svg>
+            <span><span class="s-top" data-i18n="store.soon">Coming soon</span><span class="s-main" data-i18n="store.googleplay">Google Play</span></span>
+          </a>
+        </div>
+        <div class="hint"><span class="dot"></span> <span data-i18n="hero.hint">Four languages · itineraries in seconds · made for travellers</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="sect">
+    <div class="wrap">
+      <div class="sect-head reveal">
+        <span class="eyebrow" data-i18n="feat.eyebrow">What's inside</span>
+        <h2 data-i18n-html="feat.title">A planner that gets the <span class="serif-em">feeling</span> right.</h2>
+        <p data-i18n="feat.lede">Most apps hand you a list and a map. WhereToGo reads the trip you're picturing and builds it — the vibe, the money, the route, all of it.</p>
+      </div>
+      <div class="f-grid" data-stagger>
+        <article class="f-card wide reveal">
+          <div class="f-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/><circle cx="12" cy="12" r="3.4"/></svg></div>
+          <h3 data-i18n="feat.ai.t">AI itinerary planning</h3>
+          <p data-i18n="feat.ai.d">Describe the trip in your own words. The planner scans thousands of places and lays out a day-by-day route in seconds — one you can reorder, trim, and save.</p>
+        </article>
+        <article class="f-card reveal">
+          <div class="f-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.6-7-10a7 7 0 0 1 14 0c0 5.4-7 10-7 10z"/><circle cx="12" cy="11" r="2.4"/></svg></div>
+          <h3 data-i18n="feat.mood.t">Mood-first discovery</h3>
+          <p data-i18n="feat.mood.d">Pick a vibe — slow mornings, hidden food, big views — and see places that match the feeling, not just the star rating.</p>
+        </article>
+        <article class="f-card reveal">
+          <div class="f-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/><circle cx="18" cy="17" r="2.2" fill="currentColor" stroke="none"/></svg></div>
+          <h3 data-i18n="feat.budget.t">Budget that's honest</h3>
+          <p data-i18n="feat.budget.d">Set what you want to spend and the plan stays inside it. No surprise luxury-only lists halfway through the day.</p>
+        </article>
+        <article class="f-card reveal">
+          <div class="f-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-3-7 3V5l7-3 7 3z"/><path d="M12 2v16"/></svg></div>
+          <h3 data-i18n="feat.save.t">Explore &amp; save</h3>
+          <p data-i18n="feat.save.d">Browse destinations with real photos, keep the ones you love, and find them synced the next time you open the app.</p>
+        </article>
+        <article class="f-card wide reveal">
+          <div class="f-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.7 2.7 2.7 15.3 0 18M12 3c-2.7 2.7-2.7 15.3 0 18"/></svg></div>
+          <h3 data-i18n="feat.lang.t">Four languages, all the way down</h3>
+          <p data-i18n="feat.lang.d">The whole experience — not just the menus — in the language you travel in.</p>
+          <div class="lang-row">
+            <span class="lang-chip">English</span><span class="lang-chip">Tiếng Việt</span><span class="lang-chip">한국어</span><span class="lang-chip">हिन्दी</span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="sect how">
+    <div class="wrap">
+      <div class="sect-head reveal">
+        <span class="eyebrow" data-i18n="how.eyebrow">From blank to booked</span>
+        <h2 data-i18n="how.title">Four steps, about a minute.</h2>
+        <p data-i18n="how.lede">The same flow you see in the app — the radar sweep, the route drawing itself, the cards landing one by one.</p>
+      </div>
+      <div class="steps" data-stagger>
+        <div class="step reveal"><div class="num">01<small> / 04</small></div><h3 data-i18n="how.s1.t">Set the vibe</h3><p data-i18n="how.s1.d">Mood, budget, and who's coming along. A few taps, no long forms.</p></div>
+        <div class="step reveal"><div class="num">02<small> / 04</small></div><h3 data-i18n="how.s2.t">AI scans the map</h3><p data-i18n="how.s2.d">The radar sweeps near and far, matching real places to what you asked for.</p></div>
+        <div class="step reveal"><div class="num">03<small> / 04</small></div><h3 data-i18n="how.s3.t">Routes get drawn</h3><p data-i18n="how.s3.d">The best stops connect into a walkable day that respects your time and money.</p></div>
+        <div class="step reveal"><div class="num">04<small> / 04</small></div><h3 data-i18n="how.s4.t">Your itinerary, ready</h3><p data-i18n="how.s4.d">Cards you can reorder, swap, and save — then just go live it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sect">
+    <div class="wrap show-grid">
+      <div class="reveal from-left">
+        <span class="eyebrow" data-i18n="show.eyebrow">In your pocket</span>
+        <p class="quote" data-i18n-html="show.quote">“I stopped planning the trip and started <span>taking</span> it. Thirty seconds in, the day was already on my screen.”</p>
+        <p class="quote-by" data-i18n="show.by">— the point of the whole thing</p>
+      </div>
+      <div class="phone-stage reveal zoom">
+        <div class="phone-shot">
+          <img src="assets/home.png" alt="WhereToGo — Home screen">
+          <span class="phone-cap" data-i18n="phone.cap">Your day, drawn for you</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="download" class="sect">
+    <div class="wrap">
+      <div class="dl-card download reveal zoom">
+        <span class="eyebrow" style="justify-content:center" data-i18n="dl.eyebrow">Get WhereToGo</span>
+        <h2 style="margin-top:18px" data-i18n-html="dl.title">Pack lighter. <span class="serif-em">Decide less.</span></h2>
+        <p data-i18n="dl.lede">One app that reads the trip you want and hands you a day worth living. Landing soon on iOS and Android.</p>
+        <div class="cta-row">
+          <a class="store-btn" href="#download">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.5 1.6c.1 1-.3 2-.9 2.8-.7.8-1.7 1.4-2.7 1.3-.1-1 .4-2 1-2.7.6-.8 1.7-1.3 2.6-1.4zM19 17.3c-.5 1.1-.7 1.6-1.3 2.6-.9 1.4-2.1 3.1-3.6 3.1-1.4 0-1.7-.9-3.6-.9-1.8 0-2.2.9-3.6.9-1.5 0-2.7-1.6-3.6-3C.9 16.7.7 12 2.4 9.5 3.6 7.8 5.4 6.8 7.1 6.8c1.7 0 2.8 1 4.2 1 1.4 0 2.2-1 4.2-1 1.5 0 3.1.8 4.2 2.3-3.7 2-3.1 7.3-.7 8.2z"/></svg>
+            <span><span class="s-top" data-i18n="store.soon">Coming soon</span><span class="s-main" data-i18n="store.appstore">App Store</span></span>
+          </a>
+          <a class="store-btn ghost" href="#download">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.6 2.3c-.3.2-.5.6-.5 1.1v17.2c0 .5.2.9.5 1.1l9.3-9.7-9.3-9.7zM15 10.6l-2.4-2.5 2.4-2.5 3.9 2.2c1 .6 1 1.3 0 1.9L15 10.6zm-1.5 1.6L4.6 21.4l9.6-5.5-1.7-3.7zm0-1.2 1.7-3.7-9.6-5.5 7.9 9.2z"/></svg>
+            <span><span class="s-top" data-i18n="store.soon">Coming soon</span><span class="s-main" data-i18n="store.googleplay">Google Play</span></span>
+          </a>
+        </div>
+        <span class="soon-badge"><span class="spark"></span><span data-i18n="dl.soon">Built with Flutter · iOS &amp; Android</span></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-in">
+    <div class="foot-brand">
+      <img src="assets/logo.png" alt="">
+      <div><b>WhereToGo</b><small data-i18n="foot.tag">Less searching. More living.</small></div>
+    </div>
+    <div class="foot-meta">
+      English · Tiếng Việt · 한국어 · हिन्दी<br>
+      <span data-i18n="foot.copy">© 2026 WhereToGo — made for travellers.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------------- i18n ----------------
+  var I18N = {
+    en:{
+      "nav.features":"Features","nav.how":"How it works","nav.download":"Download","nav.cta":"Get the app",
+      "hero.eyebrow":"AI travel companion",
+      "hero.title":"Less searching.<br><span class='serif-em'>More living.</span>",
+      "hero.lede":"WhereToGo plans the trip you actually want — reading your mood and budget, then drawing a day you can just walk out and live.",
+      "store.soon":"Coming soon","store.appstore":"App Store","store.googleplay":"Google Play",
+      "hero.hint":"Four languages · itineraries in seconds · made for travellers",
+      "feat.eyebrow":"What's inside",
+      "feat.title":"A planner that gets the <span class='serif-em'>feeling</span> right.",
+      "feat.lede":"Most apps hand you a list and a map. WhereToGo reads the trip you're picturing and builds it — the vibe, the money, the route, all of it.",
+      "feat.ai.t":"AI itinerary planning","feat.ai.d":"Describe the trip in your own words. The planner scans thousands of places and lays out a day-by-day route in seconds — one you can reorder, trim, and save.",
+      "feat.mood.t":"Mood-first discovery","feat.mood.d":"Pick a vibe — slow mornings, hidden food, big views — and see places that match the feeling, not just the star rating.",
+      "feat.budget.t":"Budget that's honest","feat.budget.d":"Set what you want to spend and the plan stays inside it. No surprise luxury-only lists halfway through the day.",
+      "feat.save.t":"Explore & save","feat.save.d":"Browse destinations with real photos, keep the ones you love, and find them synced the next time you open the app.",
+      "feat.lang.t":"Four languages, all the way down","feat.lang.d":"The whole experience — not just the menus — in the language you travel in.",
+      "how.eyebrow":"From blank to booked","how.title":"Four steps, about a minute.",
+      "how.lede":"The same flow you see in the app — the radar sweep, the route drawing itself, the cards landing one by one.",
+      "how.s1.t":"Set the vibe","how.s1.d":"Mood, budget, and who's coming along. A few taps, no long forms.",
+      "how.s2.t":"AI scans the map","how.s2.d":"The radar sweeps near and far, matching real places to what you asked for.",
+      "how.s3.t":"Routes get drawn","how.s3.d":"The best stops connect into a walkable day that respects your time and money.",
+      "how.s4.t":"Your itinerary, ready","how.s4.d":"Cards you can reorder, swap, and save — then just go live it.",
+      "show.eyebrow":"In your pocket",
+      "show.quote":"“I stopped planning the trip and started <span>taking</span> it. Thirty seconds in, the day was already on my screen.”",
+      "show.by":"— the point of the whole thing",
+      "phone.tag":"Today · Da Nang","phone.title":"A slow, salty morning","phone.chip1":"Relaxed","phone.chip2":"Local food",
+      "phone.i1s":"Beach walk · coffee cart","phone.i2s":"Hidden breakfast spot","phone.i3s":"Big view, short ride","phone.cap":"Your day, drawn for you",
+      "dl.eyebrow":"Get WhereToGo","dl.title":"Pack lighter. <span class='serif-em'>Decide less.</span>",
+      "dl.lede":"One app that reads the trip you want and hands you a day worth living. Landing soon on iOS and Android.",
+      "dl.soon":"Built with Flutter · iOS & Android",
+      "foot.tag":"Less searching. More living.","foot.copy":"© 2026 WhereToGo — made for travellers."
+    },
+    vi:{
+      "nav.features":"Tính năng","nav.how":"Cách hoạt động","nav.download":"Tải về","nav.cta":"Tải ứng dụng",
+      "hero.eyebrow":"Trợ lý du lịch AI",
+      "hero.title":"Bớt tìm kiếm.<br><span class='serif-em'>Sống nhiều hơn.</span>",
+      "hero.lede":"WhereToGo lên đúng chuyến đi bạn muốn — đọc cảm xúc và ngân sách của bạn, rồi vẽ ra một ngày bạn chỉ việc bước ra và tận hưởng.",
+      "store.soon":"Sắp ra mắt","store.appstore":"App Store","store.googleplay":"Google Play",
+      "hero.hint":"Bốn ngôn ngữ · lịch trình trong vài giây · cho người mê xê dịch",
+      "feat.eyebrow":"Có gì bên trong",
+      "feat.title":"Công cụ lên lịch hiểu đúng <span class='serif-em'>cảm xúc</span> của bạn.",
+      "feat.lede":"Hầu hết các app chỉ đưa bạn một danh sách và tấm bản đồ. WhereToGo đọc chuyến đi bạn đang hình dung và dựng nên nó — cảm xúc, chi phí, lộ trình, tất cả.",
+      "feat.ai.t":"Lên lịch trình bằng AI","feat.ai.d":"Mô tả chuyến đi bằng lời của bạn. Công cụ quét hàng nghìn địa điểm và dựng lộ trình theo từng ngày chỉ trong vài giây — bạn có thể sắp xếp lại, cắt bớt và lưu.",
+      "feat.mood.t":"Khám phá theo cảm xúc","feat.mood.d":"Chọn một tâm trạng — buổi sáng thong thả, quán ăn giấu kín, tầm nhìn khoáng đạt — và thấy những nơi hợp cảm xúc, không chỉ hợp số sao.",
+      "feat.budget.t":"Ngân sách trung thực","feat.budget.d":"Đặt mức bạn muốn chi và kế hoạch luôn nằm trong đó. Không còn danh sách toàn chỗ sang chảnh bất ngờ giữa ngày.",
+      "feat.save.t":"Khám phá & lưu lại","feat.save.d":"Lướt xem các điểm đến với ảnh thật, giữ lại những nơi bạn thích, và thấy chúng được đồng bộ ở lần mở app sau.",
+      "feat.lang.t":"Bốn ngôn ngữ, trọn vẹn","feat.lang.d":"Toàn bộ trải nghiệm — không chỉ menu — bằng ngôn ngữ bạn dùng khi đi.",
+      "how.eyebrow":"Từ con số 0 đến sẵn sàng","how.title":"Bốn bước, chừng một phút.",
+      "how.lede":"Đúng luồng bạn thấy trong app — radar quét, lộ trình tự vẽ, các thẻ lần lượt hiện ra.",
+      "how.s1.t":"Chọn cảm xúc","how.s1.d":"Tâm trạng, ngân sách và đi cùng ai. Vài chạm, không biểu mẫu dài dòng.",
+      "how.s2.t":"AI quét bản đồ","how.s2.d":"Radar quét gần và xa, khớp những địa điểm thật với điều bạn yêu cầu.",
+      "how.s3.t":"Lộ trình được vẽ","how.s3.d":"Những điểm dừng tốt nhất nối thành một ngày dễ đi, tôn trọng thời gian và tiền của bạn.",
+      "how.s4.t":"Lịch trình của bạn, sẵn sàng","how.s4.d":"Những thẻ bạn có thể sắp xếp, thay đổi và lưu — rồi cứ thế tận hưởng.",
+      "show.eyebrow":"Gọn trong túi",
+      "show.quote":"“Tôi thôi lên kế hoạch và bắt đầu <span>tận hưởng</span> chuyến đi. Ba mươi giây, cả ngày đã hiện trên màn hình.”",
+      "show.by":"— chính là điều cốt lõi",
+      "phone.tag":"Hôm nay · Đà Nẵng","phone.title":"Buổi sáng mặn mòi, thong thả","phone.chip1":"Thư giãn","phone.chip2":"Món địa phương",
+      "phone.i1s":"Dạo biển · xe cà phê","phone.i2s":"Quán sáng giấu kín","phone.i3s":"Tầm nhìn đẹp, đi gần","phone.cap":"Một ngày, vẽ riêng cho bạn",
+      "dl.eyebrow":"Tải WhereToGo","dl.title":"Xách nhẹ hơn. <span class='serif-em'>Quyết ít hơn.</span>",
+      "dl.lede":"Một app đọc được chuyến đi bạn muốn và trao bạn một ngày đáng sống. Sắp có trên iOS và Android.",
+      "dl.soon":"Dựng bằng Flutter · iOS & Android",
+      "foot.tag":"Bớt tìm kiếm. Sống nhiều hơn.","foot.copy":"© 2026 WhereToGo — dành cho người mê xê dịch."
+    },
+    ko:{
+      "nav.features":"기능","nav.how":"작동 방식","nav.download":"다운로드","nav.cta":"앱 받기",
+      "hero.eyebrow":"AI 여행 동반자",
+      "hero.title":"검색은 줄이고<br><span class='serif-em'>여행은 더 깊게.</span>",
+      "hero.lede":"WhereToGo는 당신의 기분과 예산을 읽고, 바로 나가서 즐길 수 있는 하루를 그려 당신이 진짜 원하는 여행을 설계합니다.",
+      "store.soon":"출시 예정","store.appstore":"App Store","store.googleplay":"Google Play",
+      "hero.hint":"4개 언어 · 몇 초 만의 일정 · 여행자를 위해",
+      "feat.eyebrow":"주요 기능",
+      "feat.title":"<span class='serif-em'>감정</span>까지 제대로 읽는 플래너.",
+      "feat.lede":"대부분의 앱은 목록과 지도만 줍니다. WhereToGo는 당신이 그리는 여행을 읽고 분위기, 비용, 경로까지 모두 만들어 줍니다.",
+      "feat.ai.t":"AI 일정 계획","feat.ai.d":"당신의 말로 여행을 설명하세요. 플래너가 수천 곳을 훑어 몇 초 만에 하루 단위 경로를 짜줍니다 — 순서 변경, 편집, 저장까지.",
+      "feat.mood.t":"기분 중심 탐색","feat.mood.d":"느긋한 아침, 숨은 맛집, 탁 트인 전망 같은 분위기를 고르면 별점이 아니라 느낌에 맞는 장소를 보여줍니다.",
+      "feat.budget.t":"솔직한 예산","feat.budget.d":"쓰고 싶은 금액을 정하면 일정이 그 안에서 짜입니다. 중간에 고급 장소만 나오는 일은 없습니다.",
+      "feat.save.t":"탐색 & 저장","feat.save.d":"실제 사진으로 여행지를 둘러보고 마음에 드는 곳을 저장하면, 다음에 앱을 열 때 그대로 동기화됩니다.",
+      "feat.lang.t":"네 가지 언어, 구석구석","feat.lang.d":"메뉴뿐 아니라 전체 경험을 당신이 여행하는 언어로.",
+      "how.eyebrow":"백지에서 완성까지","how.title":"네 단계, 약 1분.",
+      "how.lede":"앱에서 보는 그 흐름 그대로 — 레이더 스캔, 저절로 그려지는 경로, 하나씩 떨어지는 카드.",
+      "how.s1.t":"분위기 설정","how.s1.d":"기분, 예산, 동행. 몇 번의 탭이면 끝, 긴 양식은 없습니다.",
+      "how.s2.t":"AI가 지도를 스캔","how.s2.d":"레이더가 가까운 곳과 먼 곳을 훑어 요청에 맞는 실제 장소를 찾습니다.",
+      "how.s3.t":"경로가 그려짐","how.s3.d":"가장 좋은 장소들이 시간과 돈을 아끼는 걷기 좋은 하루로 이어집니다.",
+      "how.s4.t":"완성된 당신의 일정","how.s4.d":"순서를 바꾸고 교체하고 저장할 수 있는 카드 — 이제 떠나기만 하면 됩니다.",
+      "show.eyebrow":"주머니 속에",
+      "show.quote":"“여행을 계획하는 대신 <span>떠나기</span> 시작했어요. 30초 만에 하루가 화면에 떠 있었죠.”",
+      "show.by":"— 바로 그게 핵심",
+      "phone.tag":"오늘 · 다낭","phone.title":"느긋하고 짭조름한 아침","phone.chip1":"여유","phone.chip2":"현지 음식",
+      "phone.i1s":"해변 산책 · 커피 카트","phone.i2s":"숨은 아침 맛집","phone.i3s":"멋진 전망, 가까운 거리","phone.cap":"당신을 위해 그린 하루",
+      "dl.eyebrow":"WhereToGo 받기","dl.title":"짐은 가볍게. <span class='serif-em'>고민은 적게.</span>",
+      "dl.lede":"당신이 원하는 여행을 읽고 살아볼 가치가 있는 하루를 건네는 앱. 곧 iOS와 Android에 출시됩니다.",
+      "dl.soon":"Flutter로 제작 · iOS & Android",
+      "foot.tag":"검색은 줄이고, 여행은 더 깊게.","foot.copy":"© 2026 WhereToGo — 여행자를 위해 만들었습니다."
+    }
+  };
+
+  function applyLang(lang){
+    var dict = I18N[lang] || I18N.en;
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var v = dict[el.getAttribute('data-i18n')]; if(v!=null) el.textContent = v;
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(function(el){
+      var v = dict[el.getAttribute('data-i18n-html')]; if(v!=null) el.innerHTML = v;
+    });
+    document.documentElement.lang = lang;
+    document.querySelectorAll('.lang button').forEach(function(b){
+      b.setAttribute('aria-pressed', b.getAttribute('data-lang')===lang ? 'true':'false');
+    });
+    try{ localStorage.setItem('wtg_lang', lang); }catch(_){}
+  }
+  var saved = null; try{ saved = localStorage.getItem('wtg_lang'); }catch(_){}
+  var nav = (navigator.language||'en').toLowerCase();
+  var initial = saved || (nav.indexOf('vi')===0?'vi':(nav.indexOf('ko')===0?'ko':'en'));
+  applyLang(I18N[initial]?initial:'en');
+  document.querySelectorAll('.lang button').forEach(function(b){
+    b.addEventListener('click', function(){ applyLang(b.getAttribute('data-lang')); });
+  });
+
+  // ---------------- scroll reveal (staggered) ----------------
+  document.querySelectorAll('[data-stagger]').forEach(function(group){
+    Array.prototype.forEach.call(group.querySelectorAll('.reveal'), function(el,i){
+      el.style.transitionDelay = (i*0.08)+'s';
+    });
+  });
+  try{
+    var io = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold:0.12, rootMargin:'0px 0px -6% 0px'});
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  }catch(_){ document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); }); }
+
+  // nav background on scroll + subtle hero parallax
+  var navEl = document.getElementById('nav');
+  var heroCopy = document.querySelector('.hero-copy');
+  var ticking = false;
+  function onScroll(){
+    if(ticking) return; ticking = true;
+    requestAnimationFrame(function(){
+      var y = window.pageYOffset || 0;
+      if(navEl) navEl.classList.toggle('scrolled', y > 12);
+      if(heroCopy && !reduce && y < 900){ heroCopy.style.transform = 'translateY('+(y*0.12)+'px)'; heroCopy.style.opacity = String(Math.max(0, 1 - y/620)); }
+      ticking = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+
+  // ---------------- gold dust ----------------
+  var canvas = document.getElementById('globe');
+  if(canvas){
+    var ctx = canvas.getContext('2d');
+    var DPR = Math.min(window.devicePixelRatio||1, 2);
+    var W=0, H=0, dust=[];
+    function rnd(a,b){ return a+Math.random()*(b-a); }
+    function buildDust(){
+      var count = Math.max(40, Math.min(reduce?80:220, (W*H/5200)|0));
+      dust=[];
+      for(var i=0;i<count;i++){
+        dust.push({ x:Math.random()*W, y:Math.random()*H, r:rnd(0.5,2.4),
+          vy:rnd(-0.30,-0.05), drift:rnd(-0.3,0.5), sway:rnd(0.3,1.1),
+          a:rnd(0.12,0.78), ph:rnd(0,Math.PI*2), tws:rnd(0.5,1.6) });
+      }
+    }
+    function resize(){
+      var r=canvas.getBoundingClientRect(); W=r.width; H=r.height;
+      canvas.width=Math.max(1,(W*DPR)|0); canvas.height=Math.max(1,(H*DPR)|0);
+      ctx.setTransform(DPR,0,0,DPR,0,0); buildDust();
+    }
+    var last=performance.now();
+    function frame(now){
+      requestAnimationFrame(frame);
+      var dt=Math.min(now-last,50); last=now;
+      ctx.clearRect(0,0,W,H);
+      ctx.globalCompositeOperation='lighter';
+      for(var i=0;i<dust.length;i++){
+        var p=dust[i];
+        if(!reduce){
+          p.ph += p.tws*dt*0.002;
+          p.y  += p.vy*dt*0.06;
+          p.x  += (Math.sin(p.ph)*p.sway + p.drift*0.2)*dt*0.03;
+          if(p.y < -6){ p.y=H+6; p.x=Math.random()*W; }
+          if(p.x < -6) p.x=W+6; else if(p.x > W+6) p.x=-6;
+        }
+        var tw = reduce?1:(0.55+0.45*Math.sin(p.ph));
+        var alpha=p.a*tw, R=p.r*4;
+        var g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,R);
+        g.addColorStop(0,'rgba(255,226,156,'+alpha+')');
+        g.addColorStop(0.45,'rgba(232,182,90,'+(alpha*0.45)+')');
+        g.addColorStop(1,'rgba(232,182,90,0)');
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(p.x,p.y,R,0,6.2832); ctx.fill();
+      }
+      ctx.globalCompositeOperation='source-over';
+    }
+    resize(); window.addEventListener('resize', resize); requestAnimationFrame(frame);
+  }
+})();
+</script>
+
+</body>
+</html>
